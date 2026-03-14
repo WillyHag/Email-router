@@ -84,7 +84,9 @@
     <h2 style="font-family:'DM Mono'">Velkommen!</h2>
     <p style="font-size:13px; color:var(--text-muted); margin-top:10px">Skriv inn navnet ditt for å starte.</p>
     <input type="text" id="nameInput" placeholder="Fornavn Etternavn">
+    
     <button class="btn-primary" id="btnSaveName" style="width:100%; justify-content:center">Start</button>
+    
   </div>
 </div>
 
@@ -224,20 +226,47 @@ window.learn = async function(newKat) {
 };
 
 // --- STARTUP ---
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('btnSaveName').onclick = () => {
-    const n = document.getElementById('nameInput').value.trim();
-    if(!n) return;
-    currentUser = n;
-    document.getElementById('nameModal').style.display = 'none';
-    loadStats();
-  };
+// Vi flytter funksjonene ut til "window" slik at de er globalt tilgjengelige
+window.saveName = function() {
+  const n = document.getElementById('nameInput').value.trim();
+  if(!n) {
+    alert("Vennligst skriv inn navn");
+    return;
+  }
+  currentUser = n;
+  document.getElementById('nameModal').style.display = 'none';
+  console.log("Navn satt til:", currentUser);
+  loadStats();
+};
 
-  document.getElementById('btnAnalyze').onclick = analyze;
-  document.getElementById('btnReset').onclick = async () => {
+window.runAnalyze = function() {
+  analyze();
+};
+
+window.runReset = async function() {
+  if(confirm("Er du sikker på at du vil nullstille all statistikk?")) {
     await setDoc(STATS_DOC, { total:0, saks:0, kund:0, risk:0 });
     loadStats();
-  };
+  }
+};
+
+// Koble til knappene når siden er lastet
+document.addEventListener('DOMContentLoaded', () => {
+  const btnSave = document.getElementById('btnSaveName');
+  const btnAna = document.getElementById('btnAnalyze');
+  const btnRes = document.getElementById('btnReset');
+
+  if(btnSave) btnSave.onclick = window.saveName;
+  if(btnAna)  btnAna.onclick  = window.runAnalyze;
+  if(btnRes)  btnRes.onclick  = window.runReset;
+  
+  // Gjør at man kan trykke Enter i navnefeltet
+  const nameInput = document.getElementById('nameInput');
+  if(nameInput) {
+    nameInput.onkeydown = (e) => {
+      if (e.key === 'Enter') window.saveName();
+    };
+  }
 });
 </script>
 </body>
